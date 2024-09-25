@@ -1,0 +1,5 @@
+# Ignore all .txt, .mat, .csv, and .xlsx files
+*.txt
+*.mat
+*.csv
+*.xlsx

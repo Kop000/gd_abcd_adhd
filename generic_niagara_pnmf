@@ -1,0 +1,74 @@
+----------------------------------------------------------------------
+// octave脚本
+addpath('cobra_brainparts');
+%read command line arguments
+arg_list = argv();
+filename = arg_list{1};
+k=str2num(arg_list{2});
+
+%load input
+load(filename);
+
+%check dimensions, not necesary
+size(X)
+
+%run pnmf
+[W,H,recon] = opnmf_mem_cobra(X, k, [], 4,50000,[],[],100,[]);
+size(W)
+
+%save output
+save('-v7',arg_list{3},'W','H','recon');
+exit
+----------------------------------------------------------------------
+// matlab脚本
+// 输入样例: nmf('.\result\nmf_vertex_input.mat', 10, '.\result\output.mat')
+function nmf(filename, k, output)
+    addpath('cobra_brainparts');
+
+    % Create an input parser object
+    p = inputParser;
+
+    % Define the input parameters
+    addRequired(p, 'filename', @ischar);
+    addRequired(p, 'k', @isnumeric);
+    addRequired(p, 'output', @ischar);
+
+    % Parse the input parameters
+    parse(p, filename, k, output);
+
+    % Load the input file
+    load(p.Results.filename);
+
+    % Display the size of X
+    disp(size(X));
+
+    % Run pNMF
+    [W,H,recon] = opnmf_mem_cobra(X, p.Results.k, [], 4,50000,[],[],100,[]);
+
+    % Display the size of W
+    disp(size(W));
+
+    % Save the output
+        % Check if the output directory exists, if not, create it
+        outputDir = fileparts(p.Results.output);
+        if ~isfolder(outputDir)
+            mkdir(outputDir);
+        end
+
+        % Save the output
+        save(p.Results.output, 'W', 'H', 'recon', '-v7');
+    end
+% Loop to call the nmf function with different values of k and filename
+for k = 2:2:10
+    for i = 0:9
+        filename = sprintf('a_%d.mat', i);
+        output = sprintf('output_a_%d.mat', i);
+        nmf(filename, k, output);
+    end
+
+    for i = 0:9
+        filename = sprintf('b_%d.mat', i);
+        output = sprintf('output_b_%d.mat', i);
+        nmf(filename, k, output);
+    end
+end
