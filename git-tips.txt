@@ -1,0 +1,8 @@
+git init 在当前文件夹下建仓(创建.git文件)
+git add (./*.py) 提交到暂存区
+git reset 清空暂存区
+git rm -r --force 删除所有本地仓
+.gitignore文件是git要忽略的文件类型
+git commit -m "first commit" //把文件提交到仓库
+git remote add origin git@github.com:wangjiax9/practice.git //关联远程仓库
+git push -u origin main //把本地库的所有内容推送到远程库上

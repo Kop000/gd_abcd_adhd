@@ -1,5 +1,13 @@
 # Ignore all .txt, .mat, .csv, and .xlsx files
-*.txt
-*.mat
-*.csv
-*.xlsx
+# *.txt
+# *.mat
+# *.csv
+# *.xlsx
+
+mental_health_result/cross_sectional/adhd/area/
+mental_health_result/cross_sectional/adhd/data/
+mental_health_result/cross_sectional/adhd/nmf_result_best_k/brainview/
+mental_health_result/cross_sectional/adhd/stability_correlations/
+mental_health_result/cross_sectional/adhd/stability_results/
+mental_health_result/cross_sectional/adhd/stability_splits/
+vertex/
