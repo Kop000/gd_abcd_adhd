@@ -6,7 +6,7 @@ from GroupAnalyzer import GroupAnalyzer
 def main():
     # g = GroupAnalyzer(dir_path='/area/')
     # g.run()
-    n = NormalAnalyzer(dir_path='/area/')
+    n = NormalAnalyzer(root_path='longitudinal/')
     n.run()
     
 main()  

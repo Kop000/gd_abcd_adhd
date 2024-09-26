@@ -14,16 +14,17 @@ import matplotlib.colors as colors
 class NormalAnalyzer:
     def __init__(self, group='adhd', root_path='cross_sectional/', dir_path='/nmf_result_best_k/'):
         self.group = group
-        self.abcd_path = "main/"
-        self.data_path = "main/mental_health_result/" + root_path + group
-        self.mental_path = "abcd_data/mental-health/mental-health/"
-        self.neruo_path = "abcd_data/neurocognition/"
-        self.physical_path = "abcd_data/physical-health/"
-        self.culture_path = "abcd_data/culture-env/"
-        self.demo_path = "abcd_data/adcd_t2_data/"
-        self.novel_path = "abcd_data/novel-technologies/"
+        self.abcd_path = "../abcd_data/"
+        self.data_path = "./mental_health_result/" + root_path + group
+        self.mental_path = self.abcd_path+"mental-health/mental-health/"
+        self.neruo_path = self.abcd_path+"neurocognition/"
+        self.physical_path = self.abcd_path+"physical-health/"
+        self.culture_path = self.abcd_path+"culture-env/"
+        self.demo_path = self.abcd_path+"adcd_t2_data/"
+        self.novel_path = self.abcd_path+"novel-technologies/"
         self.result = self.data_path+dir_path+"area_result.mat"
         self.group_path = self.data_path+dir_path # /nmf_result_best_k/, /regroup/
+        self.work_for = root_path
     def plot_Hweights(self):
         h=loadmat(self.result)['H']
         n_components = np.shape(h)[0]
@@ -359,7 +360,7 @@ class NormalAnalyzer:
         print("Saving select columns", comp_cols, "to", fname_pls_data)
         df_nmfweights_pls.to_csv(output + fname_pls_data, index=False)
 
-    def regression_analyze(self):
+    def cross_regression_analyze(self):
         """
         Perform regression analysis on the given input data and save the plot.
 
@@ -367,8 +368,12 @@ class NormalAnalyzer:
             x_input (str): Path to the CSV file containing the demographic variable.
             y_input (str): Path to the CSV file containing Hweight in all component metrics pair.
         """
-        x_input = self.group_path + "groups.csv"
-        y_input = self.data_path + "/nmf_result_best_k/regression_analyze/combined_var.xlsx"
+        import statsmodels.api as sm
+        from scipy.stats import t
+        import seaborn as sns
+
+        x_input = self.group_path + "/regression_analyze/groups.csv"
+        y_input = self.group_path + "/regression_analyze/combined_var.xlsx"
         # var = ['cbcl_scr_07_stress_t']
         
         # Read the dataset
@@ -377,14 +382,17 @@ class NormalAnalyzer:
         y = y.iloc[:, 1:]
         y.fillna(y.median(), inplace=True)
 
-        import statsmodels.api as sm
-
         # Add a constant to the independent variables
         x = sm.add_constant(x)  
         p_values = []
         t_values = []
+        t_critical_values = []
+
+        # 计算自由度
+        df = len(x) - x.shape[1] - 1
+        # 显著性水平
+        alpha = 0.05
         # Fit the linear regression model
-        # 确保算法的x是类别的、不连续的
         for i in range(y.shape[1]):
             model = sm.OLS(y.iloc[:,i], x)
             results = model.fit()
@@ -392,6 +400,14 @@ class NormalAnalyzer:
             # Get the p-values and t-values
             p_values.append(results.pvalues.group)
             t_values.append(results.tvalues.group)
+
+            # 计算 t 分布的临界值
+            t_critical = t.ppf(1 - alpha/2, df)
+            t_critical_values.append(t_critical)
+
+        # 计算 t_critical_values 的均值并保留两位小数
+        t_critical_mean = round(np.mean(t_critical_values), 2)
+        print(f"t 分布的临界值均值为: {t_critical_mean}")
         print('-----------------Regression Analysis-----------------')
         # Combine p-values and t-values into a single DataFrame
         combined_df = pd.DataFrame({
@@ -403,30 +419,56 @@ class NormalAnalyzer:
         # Print combined DataFrame
         print(combined_df)
         # Visualize p-values and t-values
-        plt.figure(figsize=(20, 6))
+        plt.figure(figsize=(8, 6))
 
         # Plot p-values
-        plt.subplot(1, 2, 1)
-        plt.barh(combined_df['variables'], combined_df['p_values'], color='skyblue')
-        plt.axvline(x=0.05, color='red', linestyle='--')
-        plt.xlabel('p-values')
-        plt.title('P-values of Regression Analysis')
-        plt.yticks(fontsize=8) 
+        # plt.subplot(1, 2, 1)
+        # plt.barh(combined_df['variables'], combined_df['p_values'], color='skyblue')
+        # plt.axvline(x=0.05, color='red', linestyle='--')
+        # plt.xlabel('p-values')
+        # plt.title('P-values of Regression Analysis')
+        # plt.yticks(fontsize=8) 
 
         # Plot t-values
-        plt.subplot(1, 2, 2)
+        # plt.subplot(1, 2, 2)
         plt.barh(combined_df['variables'], combined_df['t_values'], color='lightgreen')
-        plt.axvline(x=1.96, color='red', linestyle='--')  
-        plt.axvline(x=-1.96, color='red', linestyle='--') 
+        plt.axvline(x=t_critical_mean, color='red', linestyle='--')
+        plt.axvline(x=-t_critical_mean, color='red', linestyle='--')
         plt.xlabel('t-values')
         plt.title('T-values of Regression Analysis')
         plt.yticks(fontsize=8)  
 
         # plt.tight_layout()
-        plt.savefig(self.group_path + "pt_values_plot.png")
-        plt.show()
-        # Save combined DataFrame to Excel
-        combined_df.to_excel(self.group_path + "pt_values.xlsx", index=False)
+        plt.savefig(self.group_path + "/regression_analyze/pt_values_plot.png")
+
+        # 筛选出 t 值大于临界值的检测结果
+        significant_results = combined_df[combined_df['t_values'].abs() > t_critical_mean]
+        print('显著结果:')
+        print(significant_results)
+
+        # 计算每组的平均值
+        significant_vars = significant_results['variables']
+        significant_data = y[significant_vars]
+        significant_data['group'] = x['group']
+
+        # 绘制所有显著变量的箱线图
+        melted_data = pd.melt(significant_data, id_vars=['group'], var_name='variable', value_name='value')
+        plt.figure(figsize=(15, 10))
+        sns.boxplot(x='variable', y='value', hue='group', data=melted_data, palette="Set3")
+        plt.title('Boxplot of Significant Results by Group')
+        plt.xticks(rotation=45)
+        plt.legend(title='Group', bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
+        plt.savefig(self.group_path + "/regression_analyze/significant_results_boxplot.png")
+
+        # 绘制所有显著变量的小提琴图
+        plt.figure(figsize=(15, 10))
+        sns.violinplot(x='variable', y='value', hue='group', data=melted_data, palette="Set3", split=True)
+        plt.title('Violin Plot of Significant Results by Group')
+        plt.xticks(rotation=45)
+        plt.legend(title='Group', bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
+        plt.savefig(self.group_path + "/regression_analyze/significant_results_violinplot.png")
 
     def pls_analyze(self):
         """
@@ -655,9 +697,21 @@ class NormalAnalyzer:
             'nihtbx_cryst_agecorrected': 'Crystallized Composite',
             'nihtbx_totalcomp_agecorrected': 'Cognition Total Composite'
         }
-        control_ids = pd.read_csv(self.group_path+"regression_analyze/groups.csv", usecols=["src_subject_id"])
+        control_ids = pd.read_csv("mental_health_result/cross_sectional/adhd/nmf_result_best_k/regression_analyze/groups.csv", usecols=["src_subject_id", "eventname"])
         
-        combined_var = control_ids.copy()
+        if self.work_for == "longitudinal/":
+            expanded_df = pd.DataFrame(columns=["src_subject_id", "eventname"])
+            events = ["2_year_follow_up_y_arm_1", "4_year_follow_up_y_arm_1"]
+            for index, row in control_ids.iterrows():
+                expanded_df=expanded_df._append(row)
+                for event in events:
+                    new_row = row.copy()
+                    new_row['eventname'] = event
+                    expanded_df=expanded_df._append(new_row)  
+            combined_var = expanded_df.copy()
+        else:
+            combined_var = control_ids.copy()
+
         # 添加公共列
         common_columns = ['src_subject_id', 'eventname']
         for category in adhd_follow:
@@ -674,14 +728,15 @@ class NormalAnalyzer:
                 if isinstance(files, dict):
                     for sub_subcategory, file in files.items():
                         other_var = pd.read_csv(file, usecols=adhd_follow[category][subcategory][sub_subcategory])
-                        other_var = other_var[other_var["eventname"] == 'baseline_year_1_arm_1']
-                        other_var = other_var.drop(columns=["eventname"])
-                        combined_var = pd.merge(combined_var, other_var, how="left", on="src_subject_id")
+                        # other_var = other_var[other_var["eventname"] == 'baseline_year_1_arm_1']
+                        # other_var = other_var.drop(columns=["eventname"])
+                        combined_var = pd.merge(combined_var, other_var, how="left", on=["src_subject_id", "eventname"])
                 else:
                     other_var = pd.read_csv(files, usecols=adhd_follow[category][subcategory])
-                    other_var = other_var[other_var["eventname"] == 'baseline_year_1_arm_1']
-                    other_var = other_var.drop(columns=["eventname"])
-                    combined_var = pd.merge(combined_var, other_var, how="left", on="src_subject_id")
+                    # other_var = other_var[other_var["eventname"] == 'baseline_year_1_arm_1']
+                    # other_var = other_var.drop(columns=["eventname"])
+                    filtered_other_var = other_var[other_var['src_subject_id'].isin(combined_var['src_subject_id'])]
+                    combined_var = pd.merge(combined_var, filtered_other_var, how="left", on=["src_subject_id", "eventname"])
         # 修改列名
         current_columns = combined_var.columns.tolist()
         new_columns = ['src_subject_id'] + [adhd_follow_explain.get(col, col) for col in current_columns[1:]]
@@ -698,7 +753,7 @@ class NormalAnalyzer:
         # self.mat_to_brainview()
         # self.plot_brainview()
         # self.Hweights_tocsv(metrics="area")
-        # self.combine_var()
-        self.regression_analyze()
+        self.combine_var()
+        # self.cross_regression_analyze()
         # self.pls_analyze()
         

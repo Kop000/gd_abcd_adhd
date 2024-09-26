@@ -6,10 +6,10 @@ from os import path, makedirs
 class GroupAnalyzer:
     def __init__(self, group='adhd', root_path='cross_sectional/', dir_path='/regroup/'):
         self.group = group
-        self.data_path = "main/mental_health_result/" + root_path + group #adhd, asd, health
+        self.data_path = "./mental_health_result/" + root_path + group #adhd, asd, health
         self.result = self.data_path+dir_path+"/result.mat"
         self.group_path = self.data_path+dir_path # /nmf_result_best_k/, /regroup/
-        self.model_path = "main/mental_health_result/cross_sectional/health/nmf_result_best_k/result.mat"
+        self.model_path = "./mental_health_result/cross_sectional/health/nmf_result_best_k/result.mat"
 
     def group_by(self):
         """

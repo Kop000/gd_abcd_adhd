@@ -15,7 +15,7 @@ class InputGenerator:
         self.output_folder = output_folder
 
     def load_data(self):
-        path = "abcd_data/"
+        path = "../abcd_data/"
         # F88 diagnosis, IQ, CBCL-ADHD, F84 diagnosis, screen
         file = ["mental-health/mental-health/mh_p_ksads_ss.csv", "neurocognition/nc_y_wisc.csv", "mental-health/mental-health/mh_p_cbcl.csv", "abcd_generate/abcd_p_screen.csv"]
         for index in range(len(self.dataset)):
@@ -35,7 +35,7 @@ class InputGenerator:
         self.screen = self.screen[self.screen["scrn_asd"] == 1].iloc[:, 0]
 
     def generate_diagnosis_dataset(self, diagnosis, dia_name):
-        path = "abcd_data/adcd_t2_data/"
+        path = "../abcd_data/adcd_t2_data/"
         file = ["mri_y_smr_area_dst.csv", "mri_y_smr_sulc_dst.csv", "mri_y_smr_thk_dst.csv", "mri_y_smr_vol_dst.csv", "abcd_p_demo.csv", "mri_y_qc_incl.csv"]
         dataset = [pd.DataFrame() for _ in range(6)]
         for index in range(len(dataset)):

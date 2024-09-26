@@ -1,8 +1,8 @@
 import subprocess
 group = "health" # adhd, asd, health
-data_path = "main/mental_health_result/"+group
-model_path = "main/mental_health_result/health"
-code_path = "./main/vertex/"
+data_path = "mental_health_result/"+group
+model_path = "mental_health_result/health"
+code_path = "./vertex/"
 dir_path = "/nmf_result_best_k/" # nmf_result_best_k, regroup
 
 def build_nmf_vertexinput():

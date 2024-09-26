@@ -16,7 +16,7 @@ import errno
 class StabilityAnalyzer:
     def __init__(self, group='adhd', root_path='cross_sectional/', dir_path='/nmf_result_best_k/', concatenate=False):
         self.group = group # adhd, asd, health
-        self.data_path = "main/mental_health_result/" + root_path + group
+        self.data_path = "./mental_health_result/" + root_path + group
         self.dir_path = dir_path # nmf_result_best_k, regroup
         self.metric = ["area", "sulc", "thk", "vol"]
         self.extract_input = [self.data_path+"/data/"+metric+".csv" for metric in self.metric]
