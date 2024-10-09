@@ -6,6 +6,7 @@ from scipy.io import savemat, loadmat
 from sklearn.linear_model import LinearRegression
 from pyls import behavioral_pls, save_results, PLSResults, load_results
 from statsmodels.stats.multitest import multipletests
+from sklearn.preprocessing import StandardScaler
 
 import scipy.stats
 import matplotlib.pyplot as plt
@@ -454,20 +455,34 @@ class NormalAnalyzer:
         missing_values = combined_var_df.isnull().sum()
         print("Missing values in each column:\n", missing_values)
         combined_var_df.to_excel(self.group_path + "regression_analyze/combined_var_filled.xlsx", index=False)
-    
+
+        # 标准化数据
+        scaler = StandardScaler()
+        combined_var_df[combined_var_df.columns[3:]] = scaler.fit_transform(combined_var_df[combined_var_df.columns[3:]])
+
         formula = []
         results = {}
         for column in combined_var_df.columns[3:]:
-            formula.append(f'{column} ~ eventname * group + (src_subject_id)')
-        for column in formula:
-            model = smf.mixedlm(column, combined_var_df, groups=combined_var_df['src_subject_id'])
-            result = model.fit()
-            results[column] = result.summary()
-            with open(results_path, 'w') as f:
-                for key, value in results.items():
-                    f.write(f"{key}\n")
-                    f.write(f"{value}\n")
-                    f.write("\n")
+            formula.append(f'{column} ~ eventname * group + src_subject_id')
+        
+        for frm in formula:
+            try:
+                print(f"Fitting model with formula: {frm}")
+                
+                # 拟合混合线性模型
+                model = smf.mixedlm(frm, combined_var_df, groups=combined_var_df['src_subject_id'])
+                
+                # 尝试增加迭代次数和更改优化算法
+                result = model.fit(maxiter=1000, method='nm')
+                
+                # 保存并输出结果
+                results[frm] = result.summary()
+                
+                with open(results_path, 'a') as f:
+                    f.write(f"Results for {frm}:\n")
+                    f.write(str(result.summary()) + "\n\n")
+            except Exception as e:
+                print(f"Error fitting model for formula '{frm}': {e}")
 
     def pls_analyze(self):
         """

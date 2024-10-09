@@ -21,7 +21,7 @@ class InputGenerator:
         for index in range(len(self.dataset)):
             self.dataset[index] = pd.read_csv(path + file[index], encoding="gbk", low_memory=False)
             if index != 1 and index != 3:
-                self.dataset[index] = self.dataset[index][self.dataset[index]["eventname"] == self.baseline]
+                self.dataset[index] = self.dataset[index][self.dataset[index]["eventname"].isin(self.baseline)]
             print(self.dataset[index].shape)
         self.ss_51, self.wisc, self.adhd_cbcl, self.screen = self.dataset
 
@@ -43,22 +43,23 @@ class InputGenerator:
         area, thk, sulc, vol, meta, include = dataset
 
         meta = meta[meta["src_subject_id"].isin(area["src_subject_id"])]
-        include = include[(include["eventname"] == self.baseline) & (include["imgincl_t1w_include"] == 1)].iloc[:, 0]
+        include = include[(include["eventname"].isin(self.baseline)) & (include["imgincl_t1w_include"] == 1)].iloc[:, 0]
 
-        name = ["area", "thk", "sulc", "vol", "meta"]
+        name = ["meta", "area", "thk", "sulc", "vol"]
         for index in range(5):
             head = True
             dataset[index] = dataset[index][dataset[index]["src_subject_id"].isin(include) & dataset[index]["src_subject_id"].isin(diagnosis)]
             if name[index] != "meta":
                 dataset[index] = dataset[index].iloc[:, :-3]
-                dataset[index] = dataset[index].drop(['src_subject_id','eventname'], axis=1)
-                head = False
+                # dataset[index] = dataset[index].drop(['src_subject_id','eventname'], axis=1)
+                # head = False
             output_folder = self.output_folder + dia_name + "/data/" 
             if not os.path.exists(output_folder):
                 os.makedirs(output_folder)
-            dataset[index].to_csv(output_folder + str(name[index]) + ".csv", header=head, index=False)
+            # dataset[index].to_csv(output_folder + str(name[index]) + ".csv", header=head, index=False)
             print(dataset[index].shape)
-
+        combined_dataset = pd.concat(dataset, axis=1)
+        combined_dataset.to_excel(output_folder + "148x4_combined.xlsx", index=False)
 
     def run(self):
         self.load_data()
@@ -66,10 +67,10 @@ class InputGenerator:
 
         self.adhd = self.ss_51[(self.ss_51["ksads_14_853_p"] == 1) | ((self.ss_51["ksads_14_856_p"] == 1) 
                 & (self.ss_51["ksads_14_855_p"] == 1)) & (self.ss_51["src_subject_id"].isin(self.wisc))].iloc[:, 0]
-        self.asd = self.ss_51[(self.ss_51["ksads2_18_861_p"] == 1) | (self.ss_51["ksads2_18_862_p"] == 1) | (self.ss_51["src_subject_id"].isin(self.screen) 
-                & (self.ss_51["src_subject_id"].isin(self.wisc)))].iloc[:, 0]
-        self.health = self.ss_51[(self.ss_51["src_subject_id"].isin(self.adhd_cbcl)) & (self.ss_51["src_subject_id"].isin(self.wisc)) 
-                & (~self.ss_51["src_subject_id"].isin(self.adhd)) & (~self.ss_51["src_subject_id"].isin(self.asd))].iloc[:, 0]
+        # self.asd = self.ss_51[(self.ss_51["ksads2_18_861_p"] == 1) | (self.ss_51["ksads2_18_862_p"] == 1) | (self.ss_51["src_subject_id"].isin(self.screen) 
+        #         & (self.ss_51["src_subject_id"].isin(self.wisc)))].iloc[:, 0]
+        # self.health = self.ss_51[(self.ss_51["src_subject_id"].isin(self.adhd_cbcl)) & (self.ss_51["src_subject_id"].isin(self.wisc)) 
+        #         & (~self.ss_51["src_subject_id"].isin(self.adhd)) & (~self.ss_51["src_subject_id"].isin(self.asd))].iloc[:, 0]
         self.generate_diagnosis_dataset(self.adhd, "adhd")
         # self.generate_diagnosis_dataset(self.asd, "asd")
         # self.generate_diagnosis_dataset(self.health, "health")
