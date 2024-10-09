@@ -5,6 +5,7 @@ import numpy as np
 from scipy.io import savemat, loadmat
 from sklearn.linear_model import LinearRegression
 from pyls import behavioral_pls, save_results, PLSResults, load_results
+from statsmodels.stats.multitest import multipletests
 
 import scipy.stats
 import matplotlib.pyplot as plt
@@ -379,7 +380,7 @@ class NormalAnalyzer:
         # Read the dataset
         y = pd.read_excel(y_input)
         x = pd.read_csv(x_input, usecols=['group'])
-        y = y.iloc[:, 1:]
+        y = y.iloc[:, 2:]
         y.fillna(y.median(), inplace=True)
 
         # Add a constant to the independent variables
@@ -400,14 +401,6 @@ class NormalAnalyzer:
             # Get the p-values and t-values
             p_values.append(results.pvalues.group)
             t_values.append(results.tvalues.group)
-
-            # 计算 t 分布的临界值
-            t_critical = t.ppf(1 - alpha/2, df)
-            t_critical_values.append(t_critical)
-
-        # 计算 t_critical_values 的均值并保留两位小数
-        t_critical_mean = round(np.mean(t_critical_values), 2)
-        print(f"t 分布的临界值均值为: {t_critical_mean}")
         print('-----------------Regression Analysis-----------------')
         # Combine p-values and t-values into a single DataFrame
         combined_df = pd.DataFrame({
@@ -420,29 +413,15 @@ class NormalAnalyzer:
         print(combined_df)
         # Visualize p-values and t-values
         plt.figure(figsize=(8, 6))
-
-        # Plot p-values
-        # plt.subplot(1, 2, 1)
-        # plt.barh(combined_df['variables'], combined_df['p_values'], color='skyblue')
-        # plt.axvline(x=0.05, color='red', linestyle='--')
-        # plt.xlabel('p-values')
-        # plt.title('P-values of Regression Analysis')
-        # plt.yticks(fontsize=8) 
-
-        # Plot t-values
-        # plt.subplot(1, 2, 2)
-        plt.barh(combined_df['variables'], combined_df['t_values'], color='lightgreen')
-        plt.axvline(x=t_critical_mean, color='red', linestyle='--')
-        plt.axvline(x=-t_critical_mean, color='red', linestyle='--')
-        plt.xlabel('t-values')
-        plt.title('T-values of Regression Analysis')
+        plt.barh(combined_df['variables'], combined_df['p_values'], color='lightgreen')
+        plt.axvline(x=0.05/combined_df.shape[1], color='red', linestyle='--')
+        plt.xlabel('p-values')
+        plt.title('p-values of Regression Analysis')
         plt.yticks(fontsize=8)  
-
-        # plt.tight_layout()
         plt.savefig(self.group_path + "/regression_analyze/pt_values_plot.png")
 
         # 筛选出 t 值大于临界值的检测结果
-        significant_results = combined_df[combined_df['t_values'].abs() > t_critical_mean]
+        significant_results = combined_df[combined_df['p_values'].abs() < 0.05/combined_df.shape[1]]
         print('显著结果:')
         print(significant_results)
 
@@ -461,14 +440,34 @@ class NormalAnalyzer:
         plt.tight_layout()
         plt.savefig(self.group_path + "/regression_analyze/significant_results_boxplot.png")
 
-        # 绘制所有显著变量的小提琴图
-        plt.figure(figsize=(15, 10))
-        sns.violinplot(x='variable', y='value', hue='group', data=melted_data, palette="Set3", split=True)
-        plt.title('Violin Plot of Significant Results by Group')
-        plt.xticks(rotation=45)
-        plt.legend(title='Group', bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.tight_layout()
-        plt.savefig(self.group_path + "/regression_analyze/significant_results_violinplot.png")
+    def longitudinal_regression_analyze(self):
+        import statsmodels.formula.api as smf
+        combined_var_path = self.group_path  + "regression_analyze/combined_var.xlsx"
+        combined_var_df = pd.read_excel(combined_var_path)
+        results_path = self.group_path + "regression_analyze/mixed_linear_model_results.txt"
+
+        # 缺失值处理
+        for column in combined_var_df.columns[3:]:
+            combined_var_df[column] = combined_var_df.groupby('src_subject_id')[column].apply(lambda x: x.ffill().bfill().fillna(x.median())).reset_index(level=0, drop=True)
+            combined_var_df[column] = combined_var_df[column].fillna(combined_var_df[column].median())
+        # 查看combined_var_df的缺失值情况
+        missing_values = combined_var_df.isnull().sum()
+        print("Missing values in each column:\n", missing_values)
+        combined_var_df.to_excel(self.group_path + "regression_analyze/combined_var_filled.xlsx", index=False)
+    
+        formula = []
+        results = {}
+        for column in combined_var_df.columns[3:]:
+            formula.append(f'{column} ~ eventname * group + (src_subject_id)')
+        for column in formula:
+            model = smf.mixedlm(column, combined_var_df, groups=combined_var_df['src_subject_id'])
+            result = model.fit()
+            results[column] = result.summary()
+            with open(results_path, 'w') as f:
+                for key, value in results.items():
+                    f.write(f"{key}\n")
+                    f.write(f"{value}\n")
+                    f.write("\n")
 
     def pls_analyze(self):
         """
@@ -559,17 +558,15 @@ class NormalAnalyzer:
         """
         This function computes characteristic variable for regression/PLS analysis.
         """
-        # input_file = self.group_path + "demographics_and_nmfweights_k6.csv"
-
         mental_path = self.mental_path
         neuro_path = self.neruo_path
         physical_path = self.physical_path
         culture_path = self.culture_path
         demo_path = self.demo_path 
         novel_path = self.novel_path
-        input_files = {
-            'environment': {
-                'early_development': physical_path + "ph_p_dhx.csv",
+        control_ids = pd.read_csv("mental_health_result/cross_sectional/adhd/nmf_result_best_k/regression_analyze/groups.csv", usecols=["src_subject_id", "eventname", "group"])
+        envi_files = {
+            'early_development': physical_path + "ph_p_dhx.csv",
                 'lifestyle': {
                     'traumatic': mental_path + 'mh_p_ksads_ss.csv',
                     'religion': demo_path + "abcd_p_demo.csv",
@@ -590,18 +587,8 @@ class NormalAnalyzer:
                     'neighbor_security_p': culture_path + "ce_p_nsc.csv"
                 },
                 'school_env': culture_path + "ce_y_srpf.csv"
-            },
-            'mental': {
-                'cbcl': mental_path + "mh_p_cbcl.csv",
-                'prodromal': mental_path + "mh_y_pps.csv",
-                'Mania': mental_path + "mh_p_gbi.csv"
-            },
-            'neuro': {
-                'nih_toolbox': neuro_path + "nc_y_nihtb.csv"
-            }
         }
-        adhd_follow = {
-            'environment': {
+        envi = {
                 # sum_condition/sum_substance 将所有condition做了累加并把999视为0; sum_religious 将777 999 空白值以平均值处理; sleep_problem 空白值做了平均值填充
                 'early_development': ['devhx_3_p', 'devhx_4_p', 'devhx_5_p', 'devhx_6_p', 'devhx_9_prescript_med', 'devhx_12a_p', 'devhx_13_3_p', 'sum_substance', 'sum_condition', 'sum_birthcomplication', 'devhx_18_p', 'devhx_20_p', 'devhx_20_p'],
                 'lifestyle': {
@@ -625,82 +612,58 @@ class NormalAnalyzer:
                 },
                 'school_env':['sum_schoolenv', 'sum_involvement', 'sum_disengagement']
 
-            }, 
-            'mental': {
-                'cbcl': ['cbcl_scr_syn_anxdep_t', 'cbcl_scr_syn_withdep_t', 'cbcl_scr_syn_somatic_t', 'cbcl_scr_syn_social_t', 'cbcl_scr_syn_thought_t', 'cbcl_scr_syn_attention_t', 'cbcl_scr_syn_rulebreak_t', 'cbcl_scr_syn_aggressive_t', 'cbcl_scr_syn_internal_t', 'cbcl_scr_syn_external_t', 'cbcl_scr_syn_totprob_t'],
-                'prodromal': ['pps_y_ss_number_nt'],
-                'Mania': ['pgbi_p_ss_score'] 
-            },
-            'neuro': {
-                'nih_toolbox': ['nihtbx_picvocab_agecorrected', 'nihtbx_flanker_agecorrected', 'nihtbx_list_agecorrected', 'nihtbx_cardsort_agecorrected', 'nihtbx_pattern_agecorrected', 'nihtbx_picture_agecorrected', 'nihtbx_reading_agecorrected', 'nihtbx_cryst_agecorrected', 'nihtbx_totalcomp_agecorrected']
-            }
         }
-        adhd_follow_explain = {
-            # Environment
-            'devhx_3_p': 'Maternal age',
-            'devhx_4_p': 'Paternal age',
-            'devhx_5_p': 'Twin birth',
-            'devhx_6_p': 'Planned pregnancy',
-            'devhx_9_prescript_med': 'Maternal medication use during pregnancy',
-            'devhx_12a_p': 'Prematurely',
-            'devhx_13_3_p': 'Casarian delivery',
-            'sum_substance': 'Maternal substance use during pregnancy',
-            'sum_condition': 'Maternal medication conditions during pregnancy',
-            'sum_birthcomplication': 'Birth complication',
-            'devhx_18_p': 'Months breasted',
-            'devhx_20_p': 'Delayed motor development',
-            'ksads_21_134_p': 'Traumatic events',
-            'sum_religious': 'Religious beliefs',
-            'sum_closefriends': 'Close friends',
-            'physical_activity1_y': 'Days of physical activity',
-            'stq_y_ss_weekday': 'Screen use during weekdays',
-            'stq_y_ss_weekend': 'Screen use during weekend',
-            'sds_p_ss_total': 'Sleep problems',
-            'fes_p_ss_fc': 'Family conflict parents',
-            'fes_y_ss_fc': 'Family conflict youth',
-            'pmq_y_ss_mean': 'Parental monitoring',
-            'crpbi_y_ss_parent': 'Primary caregiver warmth',
-            'crpbi_y_ss_caregiver': 'Secondary caregiver warmth',
-            'demo_prnt_ed_v2': 'Caregiver education',
-            'demo_prnt_empl_v2': 'Caregiver employment',
-            'demo_comb_income_v2': 'Family income',
-            'demo_roster_v2': 'Number of people living',
-            'demo_prnt_marital_v2': 'Caregiver marital status',
-            'nsc_p_ss_mean_3_items': 'Neighborhood security',
-            'sum_schoolenv': 'School environment',
-            'sum_involvement': 'Positive school involvement',
-            'sum_disengagement': 'School disengagement',
-        
-            # Mental
-            'cbcl_scr_syn_anxdep_t': 'Anxious/Depressed',
-            'cbcl_scr_syn_withdep_t': 'Withdrawn/Depressed',
-            'cbcl_scr_syn_somatic_t': 'Somatic',
-            'cbcl_scr_syn_social_t': 'Social Problems',
-            'cbcl_scr_syn_thought_t': 'Thought',
-            'cbcl_scr_syn_attention_t': 'Attention',
-            'cbcl_scr_syn_rulebreak_t': 'Rule-Breaking',
-            'cbcl_scr_syn_aggressive_t': 'Aggressive',
-            'cbcl_scr_syn_internal_t': 'Internalizing',
-            'cbcl_scr_syn_external_t': 'Externalizing',
-            'cbcl_scr_syn_totprob_t': 'Total Problems',
-            'pps_y_ss_number_nt': 'Prodromal Symptoms',
-            'pgbi_p_ss_score': 'Mania Symptoms',
-        
-            # Neuro
-            'nihtbx_picvocab_agecorrected': 'Picture Vocabulary',
-            'nihtbx_flanker_agecorrected': 'Flanker Inhibitory Control and Attention',
-            'nihtbx_list_agecorrected': 'List Sorting Working Memory',
-            'nihtbx_cardsort_agecorrected': 'Dimensional Change Card Sort',
-            'nihtbx_pattern_agecorrected': 'Pattern Comparison Processing Speed',
-            'nihtbx_picture_agecorrected': 'Picture Sequence Memory',
-            'nihtbx_reading_agecorrected': 'Oral Reading Recognition',
-            'nihtbx_cryst_agecorrected': 'Crystallized Composite',
-            'nihtbx_totalcomp_agecorrected': 'Cognition Total Composite'
-        }
-        control_ids = pd.read_csv("mental_health_result/cross_sectional/adhd/nmf_result_best_k/regression_analyze/groups.csv", usecols=["src_subject_id", "eventname"])
         
         if self.work_for == "longitudinal/":
-            expanded_df = pd.DataFrame(columns=["src_subject_id", "eventname"])
+            input_files = {
+                'mental': {
+                    'cbcl': mental_path + "mh_p_cbcl.csv",
+                    'prodromal': mental_path + "mh_y_pps.csv",
+                    'Mania': mental_path + "mh_p_gbi.csv"
+                },
+                'neuro': {
+                    'nih_toolbox': neuro_path + "nc_y_nihtb.csv"
+                }
+            }
+            adhd_follow = {
+                # 去掉环境，只考查心理和认知，且使用raw data
+                'mental': {
+                    'cbcl': ['cbcl_scr_syn_anxdep_r', 'cbcl_scr_syn_withdep_r', 'cbcl_scr_syn_somatic_r', 'cbcl_scr_syn_social_r', 'cbcl_scr_syn_thought_r', 'cbcl_scr_syn_attention_r', 'cbcl_scr_syn_rulebreak_r', 'cbcl_scr_syn_aggressive_r', 'cbcl_scr_syn_internal_r', 'cbcl_scr_syn_external_r', 'cbcl_scr_syn_totprob_r'],
+                    'prodromal': ['pps_y_ss_number'],
+                    'Mania': ['pgbi_p_ss_score'] 
+                },
+                'neuro': {
+                    'nih_toolbox': ['nihtbx_picvocab_uncorrected', 'nihtbx_flanker_uncorrected', 'nihtbx_list_uncorrected', 'nihtbx_cardsort_uncorrected', 'nihtbx_pattern_uncorrected', 'nihtbx_picture_uncorrected', 'nihtbx_reading_uncorrected', 'nihtbx_cryst_uncorrected', 'nihtbx_totalcomp_uncorrected']
+                }
+            }
+            adhd_follow_explain = {
+                # Mental
+                'cbcl_scr_syn_anxdep_r': 'Anxious_Depressed',
+                'cbcl_scr_syn_withdep_r': 'Withdrawn_Depressed',
+                'cbcl_scr_syn_somatic_r': 'Somatic',
+                'cbcl_scr_syn_social_r': 'Social_Problems',
+                'cbcl_scr_syn_thought_r': 'Thought',
+                'cbcl_scr_syn_attention_r': 'Attention',
+                'cbcl_scr_syn_rulebreak_r': 'Rule_Breaking',
+                'cbcl_scr_syn_aggressive_r': 'Aggressive',
+                'cbcl_scr_syn_internal_r': 'Internalizing',
+                'cbcl_scr_syn_external_r': 'Externalizing',
+                'cbcl_scr_syn_totprob_r': 'Total_Problems',
+                'pps_y_ss_number': 'Prodromal_Symptoms',
+                'pgbi_p_ss_score': 'Mania_Symptoms',
+            
+                # Neuro
+                'nihtbx_picvocab_uncorrected': 'Picture_Vocabulary',
+                'nihtbx_flanker_uncorrected': 'Flanker Inhibitory_Control_and_Attention',
+                'nihtbx_list_uncorrected': 'List Sorting_Working_Memory',
+                'nihtbx_cardsort_uncorrected': 'Dimensional_Change_Card_Sort',
+                'nihtbx_pattern_uncorrected': 'Pattern_Comparison_Processing_Speed',
+                'nihtbx_picture_uncorrected': 'Picture_Sequence_Memory',
+                'nihtbx_reading_uncorrected': 'Oral_Reading_Recognition',
+                'nihtbx_cryst_uncorrected': 'Crystallized_Composite',
+                'nihtbx_totalcomp_uncorrected': 'Cognition_Total_Composite'
+            }
+            expanded_df = pd.DataFrame(columns=["src_subject_id", "eventname", "group"])
             events = ["2_year_follow_up_y_arm_1", "4_year_follow_up_y_arm_1"]
             for index, row in control_ids.iterrows():
                 expanded_df=expanded_df._append(row)
@@ -709,8 +672,93 @@ class NormalAnalyzer:
                     new_row['eventname'] = event
                     expanded_df=expanded_df._append(new_row)  
             combined_var = expanded_df.copy()
-        else:
+        else: 
+            input_files = {
+                'environment': envi_files,
+                'mental': {
+                    'cbcl': mental_path + "mh_p_cbcl.csv",
+                    'prodromal': mental_path + "mh_y_pps.csv",
+                    'Mania': mental_path + "mh_p_gbi.csv"
+                },
+                'neuro': {
+                    'nih_toolbox': neuro_path + "nc_y_nihtb.csv"
+                }
+            }
+            adhd_follow = {
+                'environment': envi, 
+                'mental': {
+                    'cbcl': ['cbcl_scr_syn_anxdep_t', 'cbcl_scr_syn_withdep_t', 'cbcl_scr_syn_somatic_t', 'cbcl_scr_syn_social_t', 'cbcl_scr_syn_thought_t', 'cbcl_scr_syn_attention_t', 'cbcl_scr_syn_rulebreak_t', 'cbcl_scr_syn_aggressive_t', 'cbcl_scr_syn_internal_t', 'cbcl_scr_syn_external_t', 'cbcl_scr_syn_totprob_t'],
+                    'prodromal': ['pps_y_ss_number'],
+                    'Mania': ['pgbi_p_ss_score'] 
+                },
+                'neuro': {
+                    'nih_toolbox': ['nihtbx_picvocab_agecorrected', 'nihtbx_flanker_agecorrected', 'nihtbx_list_agecorrected', 'nihtbx_cardsort_agecorrected', 'nihtbx_pattern_agecorrected', 'nihtbx_picture_agecorrected', 'nihtbx_reading_agecorrected', 'nihtbx_cryst_agecorrected', 'nihtbx_totalcomp_agecorrected']
+                }
+            }
+            adhd_follow_explain = {
+                # Environment
+                'devhx_3_p': 'Maternal age',
+                'devhx_4_p': 'Paternal age',
+                'devhx_5_p': 'Twin birth',
+                'devhx_6_p': 'Planned pregnancy',
+                'devhx_9_prescript_med': 'Maternal medication use during pregnancy',
+                'devhx_12a_p': 'Prematurely',
+                'devhx_13_3_p': 'Casarian delivery',
+                'sum_substance': 'Maternal substance use during pregnancy',
+                'sum_condition': 'Maternal medication conditions during pregnancy',
+                'sum_birthcomplication': 'Birth complication',
+                'devhx_18_p': 'Months breasted',
+                'devhx_20_p': 'Delayed motor development',
+                'ksads_21_134_p': 'Traumatic events',
+                'sum_religious': 'Religious beliefs',
+                'sum_closefriends': 'Close friends',
+                'physical_activity1_y': 'Days of physical activity',
+                'stq_y_ss_weekday': 'Screen use during weekdays',
+                'stq_y_ss_weekend': 'Screen use during weekend',
+                'sds_p_ss_total': 'Sleep problems',
+                'fes_p_ss_fc': 'Family conflict parents',
+                'fes_y_ss_fc': 'Family conflict youth',
+                'pmq_y_ss_mean': 'Parental monitoring',
+                'crpbi_y_ss_parent': 'Primary caregiver warmth',
+                'crpbi_y_ss_caregiver': 'Secondary caregiver warmth',
+                'demo_prnt_ed_v2': 'Caregiver education',
+                'demo_prnt_empl_v2': 'Caregiver employment',
+                'demo_comb_income_v2': 'Family income',
+                'demo_roster_v2': 'Number of people living',
+                'demo_prnt_marital_v2': 'Caregiver marital status',
+                'nsc_p_ss_mean_3_items': 'Neighborhood security',
+                'sum_schoolenv': 'School environment',
+                'sum_involvement': 'Positive school involvement',
+                'sum_disengagement': 'School disengagement',
+            
+                # Mental
+                'cbcl_scr_syn_anxdep_t': 'Anxious/Depressed',
+                'cbcl_scr_syn_withdep_t': 'Withdrawn/Depressed',
+                'cbcl_scr_syn_somatic_t': 'Somatic',
+                'cbcl_scr_syn_social_t': 'Social Problems',
+                'cbcl_scr_syn_thought_t': 'Thought',
+                'cbcl_scr_syn_attention_t': 'Attention',
+                'cbcl_scr_syn_rulebreak_t': 'Rule-Breaking',
+                'cbcl_scr_syn_aggressive_t': 'Aggressive',
+                'cbcl_scr_syn_internal_t': 'Internalizing',
+                'cbcl_scr_syn_external_t': 'Externalizing',
+                'cbcl_scr_syn_totprob_t': 'Total Problems',
+                'pps_y_ss_number_nt': 'Prodromal Symptoms',
+                'pgbi_p_ss_score': 'Mania Symptoms',
+            
+                # Neuro
+                'nihtbx_picvocab_agecorrected': 'Picture Vocabulary',
+                'nihtbx_flanker_agecorrected': 'Flanker Inhibitory Control and Attention',
+                'nihtbx_list_agecorrected': 'List Sorting Working Memory',
+                'nihtbx_cardsort_agecorrected': 'Dimensional Change Card Sort',
+                'nihtbx_pattern_agecorrected': 'Pattern Comparison Processing Speed',
+                'nihtbx_picture_agecorrected': 'Picture Sequence Memory',
+                'nihtbx_reading_agecorrected': 'Oral Reading Recognition',
+                'nihtbx_cryst_agecorrected': 'Crystallized Composite',
+                'nihtbx_totalcomp_agecorrected': 'Cognition Total Composite'
+            }
             combined_var = control_ids.copy()
+            
 
         # 添加公共列
         common_columns = ['src_subject_id', 'eventname']
@@ -728,13 +776,9 @@ class NormalAnalyzer:
                 if isinstance(files, dict):
                     for sub_subcategory, file in files.items():
                         other_var = pd.read_csv(file, usecols=adhd_follow[category][subcategory][sub_subcategory])
-                        # other_var = other_var[other_var["eventname"] == 'baseline_year_1_arm_1']
-                        # other_var = other_var.drop(columns=["eventname"])
                         combined_var = pd.merge(combined_var, other_var, how="left", on=["src_subject_id", "eventname"])
                 else:
                     other_var = pd.read_csv(files, usecols=adhd_follow[category][subcategory])
-                    # other_var = other_var[other_var["eventname"] == 'baseline_year_1_arm_1']
-                    # other_var = other_var.drop(columns=["eventname"])
                     filtered_other_var = other_var[other_var['src_subject_id'].isin(combined_var['src_subject_id'])]
                     combined_var = pd.merge(combined_var, filtered_other_var, how="left", on=["src_subject_id", "eventname"])
         # 修改列名
@@ -753,7 +797,8 @@ class NormalAnalyzer:
         # self.mat_to_brainview()
         # self.plot_brainview()
         # self.Hweights_tocsv(metrics="area")
-        self.combine_var()
+        # self.combine_var()
         # self.cross_regression_analyze()
+        self.longitudinal_regression_analyze()
         # self.pls_analyze()
         
