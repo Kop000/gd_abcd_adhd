@@ -445,16 +445,25 @@ class NormalAnalyzer:
         import statsmodels.formula.api as smf
         combined_var_path = self.group_path  + "regression_analyze/combined_var.xlsx"
         combined_var_df = pd.read_excel(combined_var_path)
-        results_path = self.group_path + "regression_analyze/mixed_linear_model_results.txt"
+        results_path = self.group_path + "regression_analyze/nero_mlm_results.txt"
 
-        # 缺失值处理
-        for column in combined_var_df.columns[3:]:
-            combined_var_df[column] = combined_var_df.groupby('src_subject_id')[column].apply(lambda x: x.ffill().bfill().fillna(x.median())).reset_index(level=0, drop=True)
-            combined_var_df[column] = combined_var_df[column].fillna(combined_var_df[column].median())
-        # 查看combined_var_df的缺失值情况
-        missing_values = combined_var_df.isnull().sum()
-        print("Missing values in each column:\n", missing_values)
-        combined_var_df.to_excel(self.group_path + "regression_analyze/combined_var_filled.xlsx", index=False)
+        # # 缺失值处理
+        # for column in combined_var_df.columns[3:]:
+        #     combined_var_df[column] = combined_var_df.groupby('src_subject_id')[column].apply(lambda x: x.ffill().bfill().fillna(x.median())).reset_index(level=0, drop=True)
+        #     combined_var_df[column] = combined_var_df[column].fillna(combined_var_df[column].median())
+        # # 查看combined_var_df的缺失值情况
+        # missing_values = combined_var_df.isnull().sum()
+        # print("Missing values in each column:\n", missing_values)
+        # combined_var_df.to_excel(self.group_path + "regression_analyze/combined_var_filled.xlsx", index=False)
+
+        # 筛选出每个id在3个timepoint都有值的数据
+        # mental可以包含所有指标，数据保留较好
+        # combined_var_df = combined_var_df.iloc[:,:16].groupby('src_subject_id').filter(lambda x: x.notnull().all().all())
+        # combined_var_df.to_excel(self.group_path + "regression_analyze/mental_filled.xlsx", index=False)
+        # nero无法包含所有指标，仅筛选出这四项丢失人数最少的指标: Picture_Vocabulary, Flanker Inhibitory_Control_and_Attention, Oral_Reading_Recognition, Crystallized_Composite
+        # combined_var_df = combined_var_df.iloc[:,[0, 1, 2, 16, 17, 22, 23]].groupby('src_subject_id').filter(lambda x: x.notnull().all().all())
+        # combined_var_df.to_excel(self.group_path + "regression_analyze/nero_filled.xlsx", index=False)
+        print("Combined var shape after filtering:", combined_var_df.shape)
 
         # 标准化数据
         scaler = StandardScaler()

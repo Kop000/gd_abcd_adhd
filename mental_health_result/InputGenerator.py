@@ -58,7 +58,10 @@ class InputGenerator:
                 os.makedirs(output_folder)
             # dataset[index].to_csv(output_folder + str(name[index]) + ".csv", header=head, index=False)
             print(dataset[index].shape)
+        # 纵向整合出262个
         combined_dataset = pd.concat(dataset, axis=1)
+        combined_dataset = combined_dataset.loc[:, ~combined_dataset.columns.duplicated()]
+        combined_dataset = combined_dataset[combined_dataset.groupby('src_subject_id')['src_subject_id'].transform('size') == 3]
         combined_dataset.to_excel(output_folder + "148x4_combined.xlsx", index=False)
 
     def run(self):

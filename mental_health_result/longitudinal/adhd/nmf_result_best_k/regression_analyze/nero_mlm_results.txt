@@ -1,0 +1,186 @@
+Results for Picture_Vocabulary ~ eventname * group + src_subject_id:
+                                Mixed Linear Model Regression Results
+======================================================================================================
+Model:                          MixedLM             Dependent Variable:             Picture_Vocabulary
+No. Observations:               123                 Method:                         REML              
+No. Groups:                     41                  Scale:                          0.1675            
+Min. group size:                3                   Log-Likelihood:                 -54.2303          
+Max. group size:                3                   Converged:                      Yes               
+Mean group size:                3.0                                                                   
+------------------------------------------------------------------------------------------------------
+                                            Coef.    Std.Err.    z    P>|z|     [0.025       0.975]   
+------------------------------------------------------------------------------------------------------
+Intercept                                   -9.502 6285943.163 -0.000 1.000 -12320231.710 12320212.705
+eventname[T.4_year_follow_up_y_arm_1]        0.266       0.252  1.055 0.291        -0.228        0.761
+eventname[T.baseline_year_1_arm_1]          -0.055       0.252 -0.218 0.828        -0.550        0.440
+src_subject_id[T.NDAR_INV0MCARYLD]          -0.724       0.668 -1.083 0.279        -2.034        0.586
+src_subject_id[T.NDAR_INV0PR0WY8F]          -0.838 1257188.633 -0.000 1.000  -2464045.280  2464043.603
+src_subject_id[T.NDAR_INV1WL8U6A7]           4.090 2514377.265  0.000 1.000  -4928084.793  4928092.973
+src_subject_id[T.NDAR_INV26UB5CFA]           0.379       0.668  0.567 0.570        -0.931        1.689
+src_subject_id[T.NDAR_INV425C3PNM]          -0.942 1257188.633 -0.000 1.000  -2464045.383  2464043.500
+src_subject_id[T.NDAR_INV4LPXB23R]           2.562 1257188.633  0.000 1.000  -2464041.879  2464047.004
+src_subject_id[T.NDAR_INV4VVRLBUW]          -1.080 1257188.633 -0.000 1.000  -2464045.521  2464043.362
+src_subject_id[T.NDAR_INV55R9F7EX]           3.528 1257188.633  0.000 1.000  -2464040.914  2464047.969
+src_subject_id[T.NDAR_INV5E1VA5Z1]          -0.276       0.668 -0.413 0.680        -1.586        1.034
+src_subject_id[T.NDAR_INV5T6VPW2C]           6.250 5028754.530  0.000 1.000  -9856171.516  9856184.016
+src_subject_id[T.NDAR_INV654DRYXT]           5.836 5028754.530  0.000 1.000  -9856171.930  9856183.602
+src_subject_id[T.NDAR_INV6GNKZJJN]           3.573 2514377.265  0.000 1.000  -4928085.310  4928092.456
+src_subject_id[T.NDAR_INV8BG4EF9Y]           0.334 1257188.633  0.000 1.000  -2464044.108  2464044.775
+src_subject_id[T.NDAR_INV9BC4K3FV]          -0.218 1257188.633 -0.000 1.000  -2464044.659  2464044.224
+src_subject_id[T.NDAR_INV9KCVTWFZ]           0.483       0.668  0.722 0.470        -0.827        1.793
+src_subject_id[T.NDAR_INVA3VX7WRD]          -0.700 1257188.633 -0.000 1.000  -2464045.142  2464043.741
+src_subject_id[T.NDAR_INVB7BG5TYR]          -0.459 1257188.633 -0.000 1.000  -2464044.901  2464043.982
+src_subject_id[T.NDAR_INVBFGLJHYJ]           0.069       0.668  0.103 0.918        -1.241        1.379
+src_subject_id[T.NDAR_INVCCYUB5TM]          -1.631 1257188.633 -0.000 1.000  -2464046.073  2464042.810
+src_subject_id[T.NDAR_INVCDP4CRFV]          -2.011 1257188.633 -0.000 1.000  -2464046.452  2464042.431
+src_subject_id[T.NDAR_INVEE52ZTTG]           4.308 3771565.898  0.000 1.000  -7392129.016  7392137.633
+src_subject_id[T.NDAR_INVEL8GFR7G]           0.368 1257188.633  0.000 1.000  -2464044.073  2464044.810
+src_subject_id[T.NDAR_INVG9KR5UXZ]          -2.287 1257188.633 -0.000 1.000  -2464046.728  2464042.155
+src_subject_id[T.NDAR_INVGXUMDLPL]           0.379       0.668  0.567 0.570        -0.931        1.689
+src_subject_id[T.NDAR_INVH0474HRG]           0.448       0.668  0.671 0.502        -0.862        1.758
+src_subject_id[T.NDAR_INVJZRV5ANP]           0.207       0.668  0.310 0.757        -1.103        1.517
+src_subject_id[T.NDAR_INVM3902G6F]           6.032 3771565.898  0.000 1.000  -7392127.292  7392139.357
+src_subject_id[T.NDAR_INVPEG2KF9H]           7.801 5028754.530  0.000 1.000  -9856169.964  9856185.567
+src_subject_id[T.NDAR_INVR2HJCC0M]          -1.597 1257188.633 -0.000 1.000  -2464046.038  2464042.845
+src_subject_id[T.NDAR_INVRL1GM16T]          -0.448       0.668 -0.671 0.502        -1.758        0.862
+src_subject_id[T.NDAR_INVT7YJ84MG]          -2.149 1257188.633 -0.000 1.000  -2464046.590  2464042.293
+src_subject_id[T.NDAR_INVTK5NYC8X]           7.319 5028754.530  0.000 1.000  -9856170.447  9856185.085
+src_subject_id[T.NDAR_INVUC80Z0WM]           7.319 5028754.530  0.000 1.000  -9856170.447  9856185.085
+src_subject_id[T.NDAR_INVV44RDE6R]          -0.483       0.668 -0.722 0.470        -1.793        0.827
+src_subject_id[T.NDAR_INVV5GRGPFP]           4.963 3771565.898  0.000 1.000  -7392128.361  7392138.288
+src_subject_id[T.NDAR_INVZ4NNCTMH]          -0.563 1257188.633 -0.000 1.000  -2464045.004  2464043.879
+src_subject_id[T.NDAR_INVZ8ZP1RDT]           0.162 1257188.633  0.000 1.000  -2464044.280  2464044.603
+src_subject_id[T.NDAR_INVZHCK39Y1]           2.069       0.668  3.095 0.002         0.759        3.379
+src_subject_id[T.NDAR_INVZLL8B2MA]           0.034       0.668  0.052 0.959        -1.276        1.345
+src_subject_id[T.NDAR_INVZXHZPZ48]          -0.907 1257188.633 -0.000 1.000  -2464045.349  2464043.534
+group                                        1.822 1257188.633  0.000 1.000  -2464042.619  2464046.264
+eventname[T.4_year_follow_up_y_arm_1]:group  0.030       0.052  0.572 0.567        -0.072        0.132
+eventname[T.baseline_year_1_arm_1]:group    -0.085       0.052 -1.630 0.103        -0.186        0.017
+Group Var                                    0.168       0.107                                        
+======================================================================================================
+
+
+Results for Oral_Reading_Recognition ~ eventname * group + src_subject_id:
+                                 Mixed Linear Model Regression Results
+=======================================================================================================
+Model:                       MixedLM            Dependent Variable:            Oral_Reading_Recognition
+No. Observations:            123                Method:                        REML                    
+No. Groups:                  41                 Scale:                         0.3518                  
+Min. group size:             3                  Log-Likelihood:                -82.7912                
+Max. group size:             3                  Converged:                     Yes                     
+Mean group size:             3.0                                                                       
+-------------------------------------------------------------------------------------------------------
+                                            Coef.    Std.Err.     z    P>|z|     [0.025       0.975]   
+-------------------------------------------------------------------------------------------------------
+Intercept                                   -1.112 12043890.658 -0.000 1.000 -23605593.035 23605590.812
+eventname[T.4_year_follow_up_y_arm_1]        0.492        0.366  1.346 0.178        -0.225        1.209
+eventname[T.baseline_year_1_arm_1]          -0.550        0.366 -1.504 0.133        -1.267        0.167
+src_subject_id[T.NDAR_INV0MCARYLD]          -0.047        0.969 -0.049 0.961        -1.945        1.851
+src_subject_id[T.NDAR_INV0PR0WY8F]           0.274  2408778.132  0.000 1.000  -4721118.111  4721118.659
+src_subject_id[T.NDAR_INV1WL8U6A7]           0.627  4817556.263  0.000 1.000  -9442236.143  9442237.396
+src_subject_id[T.NDAR_INV26UB5CFA]          -1.034        0.969 -1.067 0.286        -2.932        0.865
+src_subject_id[T.NDAR_INV425C3PNM]          -0.619  2408778.132 -0.000 1.000  -4721119.004  4721117.766
+src_subject_id[T.NDAR_INV4LPXB23R]           0.854  2408778.132  0.000 1.000  -4721117.531  4721119.239
+src_subject_id[T.NDAR_INV4VVRLBUW]           1.120  2408778.132  0.000 1.000  -4721117.265  4721119.504
+src_subject_id[T.NDAR_INV55R9F7EX]           1.841  2408778.132  0.000 1.000  -4721116.544  4721120.225
+src_subject_id[T.NDAR_INV5E1VA5Z1]          -0.658        0.969 -0.679 0.497        -2.556        1.240
+src_subject_id[T.NDAR_INV5T6VPW2C]          -0.391  9635112.526 -0.000 1.000 -18884473.930 18884473.148
+src_subject_id[T.NDAR_INV654DRYXT]           0.784  9635112.526  0.000 1.000 -18884472.755 18884474.323
+src_subject_id[T.NDAR_INV6GNKZJJN]           0.580  4817556.263  0.000 1.000  -9442236.190  9442237.349
+src_subject_id[T.NDAR_INV8BG4EF9Y]           1.684  2408778.132  0.000 1.000  -4721116.701  4721120.068
+src_subject_id[T.NDAR_INV9BC4K3FV]           0.744  2408778.132  0.000 1.000  -4721117.641  4721119.129
+src_subject_id[T.NDAR_INV9KCVTWFZ]           0.376        0.969  0.388 0.698        -1.522        2.274
+src_subject_id[T.NDAR_INVA3VX7WRD]          -0.196  2408778.132 -0.000 1.000  -4721118.581  4721118.189
+src_subject_id[T.NDAR_INVB7BG5TYR]           0.180  2408778.132  0.000 1.000  -4721118.205  4721118.565
+src_subject_id[T.NDAR_INVBFGLJHYJ]          -0.517        0.969 -0.534 0.594        -2.415        1.381
+src_subject_id[T.NDAR_INVCCYUB5TM]           0.274  2408778.132  0.000 1.000  -4721118.111  4721118.659
+src_subject_id[T.NDAR_INVCDP4CRFV]           0.509  2408778.132  0.000 1.000  -4721117.876  4721118.894
+src_subject_id[T.NDAR_INVEE52ZTTG]          -0.258  7226334.395 -0.000 1.000 -14163355.412 14163354.896
+src_subject_id[T.NDAR_INVEL8GFR7G]           0.838  2408778.132  0.000 1.000  -4721117.547  4721119.223
+src_subject_id[T.NDAR_INVG9KR5UXZ]          -0.384  2408778.132 -0.000 1.000  -4721118.769  4721118.001
+src_subject_id[T.NDAR_INVGXUMDLPL]          -0.094        0.969 -0.097 0.923        -1.992        1.804
+src_subject_id[T.NDAR_INVH0474HRG]           0.047        0.969  0.049 0.961        -1.851        1.945
+src_subject_id[T.NDAR_INVJZRV5ANP]           0.329        0.969  0.340 0.734        -1.569        2.227
+src_subject_id[T.NDAR_INVM3902G6F]           0.964  7226334.395  0.000 1.000 -14163354.190 14163356.118
+src_subject_id[T.NDAR_INVPEG2KF9H]           1.489  9635112.526  0.000 1.000 -18884472.050 18884475.027
+src_subject_id[T.NDAR_INVR2HJCC0M]          -0.901  2408778.132 -0.000 1.000  -4721119.285  4721117.484
+src_subject_id[T.NDAR_INVRL1GM16T]          -0.094        0.969 -0.097 0.923        -1.992        1.804
+src_subject_id[T.NDAR_INVT7YJ84MG]          -1.465  2408778.132 -0.000 1.000  -4721119.849  4721116.920
+src_subject_id[T.NDAR_INVTK5NYC8X]           0.878  9635112.526  0.000 1.000 -18884472.661 18884474.417
+src_subject_id[T.NDAR_INVUC80Z0WM]           0.831  9635112.526  0.000 1.000 -18884472.708 18884474.370
+src_subject_id[T.NDAR_INVV44RDE6R]          -0.705        0.969 -0.728 0.467        -2.603        1.193
+src_subject_id[T.NDAR_INVV5GRGPFP]          -0.117  7226334.395 -0.000 1.000 -14163355.271 14163355.037
+src_subject_id[T.NDAR_INVZ4NNCTMH]          -0.196  2408778.132 -0.000 1.000  -4721118.581  4721118.189
+src_subject_id[T.NDAR_INVZ8ZP1RDT]           1.355  2408778.132  0.000 1.000  -4721117.030  4721119.739
+src_subject_id[T.NDAR_INVZHCK39Y1]           1.410        0.969  1.455 0.146        -0.489        3.308
+src_subject_id[T.NDAR_INVZLL8B2MA]          -0.094        0.969 -0.097 0.923        -1.992        1.804
+src_subject_id[T.NDAR_INVZXHZPZ48]          -0.290  2408778.132 -0.000 1.000  -4721118.675  4721118.095
+group                                        0.204  2408778.132  0.000 1.000  -4721118.180  4721118.589
+eventname[T.4_year_follow_up_y_arm_1]:group -0.002        0.075 -0.032 0.974        -0.150        0.145
+eventname[T.baseline_year_1_arm_1]:group    -0.023        0.075 -0.302 0.762        -0.170        0.125
+Group Var                                    0.352        0.156                                        
+=======================================================================================================
+
+
+Results for Crystallized_Composite ~ eventname * group + src_subject_id:
+                        Mixed Linear Model Regression Results
+======================================================================================
+Model:                  MixedLM       Dependent Variable:       Crystallized_Composite
+No. Observations:       123           Method:                   REML                  
+No. Groups:             41            Scale:                    0.2029                
+Min. group size:        3             Log-Likelihood:           -61.6107              
+Max. group size:        3             Converged:                Yes                   
+Mean group size:        3.0                                                           
+--------------------------------------------------------------------------------------
+                                            Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+--------------------------------------------------------------------------------------
+Intercept                                    1.087                                    
+eventname[T.4_year_follow_up_y_arm_1]        0.326    0.278  1.174 0.240 -0.218  0.871
+eventname[T.baseline_year_1_arm_1]          -0.270    0.278 -0.972 0.331 -0.814  0.274
+src_subject_id[T.NDAR_INV0MCARYLD]          -0.478    0.736 -0.650 0.516 -1.920  0.964
+src_subject_id[T.NDAR_INV0PR0WY8F]           1.074                                    
+src_subject_id[T.NDAR_INV1WL8U6A7]          -0.156                                    
+src_subject_id[T.NDAR_INV26UB5CFA]          -0.199    0.736 -0.271 0.786 -1.641  1.243
+src_subject_id[T.NDAR_INV425C3PNM]           0.676                                    
+src_subject_id[T.NDAR_INV4LPXB23R]           0.520                                    
+src_subject_id[T.NDAR_INV4VVRLBUW]           1.353                                    
+src_subject_id[T.NDAR_INV55R9F7EX]           1.556                                    
+src_subject_id[T.NDAR_INV5E1VA5Z1]          -0.438    0.736 -0.596 0.551 -1.880  1.003
+src_subject_id[T.NDAR_INV5T6VPW2C]          -2.264                                    
+src_subject_id[T.NDAR_INV654DRYXT]          -1.945                                    
+src_subject_id[T.NDAR_INV6GNKZJJN]          -0.514                                    
+src_subject_id[T.NDAR_INV8BG4EF9Y]           2.509                                    
+src_subject_id[T.NDAR_INV9BC4K3FV]           1.712                                    
+src_subject_id[T.NDAR_INV9KCVTWFZ]          -0.080    0.736 -0.108 0.914 -1.522  1.362
+src_subject_id[T.NDAR_INVA3VX7WRD]           0.955                                    
+src_subject_id[T.NDAR_INVB7BG5TYR]           1.273                                    
+src_subject_id[T.NDAR_INVBFGLJHYJ]          -0.399    0.736 -0.542 0.588 -1.840  1.043
+src_subject_id[T.NDAR_INVCCYUB5TM]           0.636                                    
+src_subject_id[T.NDAR_INVCDP4CRFV]           0.476                                    
+src_subject_id[T.NDAR_INVEE52ZTTG]          -1.907                                    
+src_subject_id[T.NDAR_INVEL8GFR7G]           2.110                                    
+src_subject_id[T.NDAR_INVG9KR5UXZ]          -0.082                                    
+src_subject_id[T.NDAR_INVGXUMDLPL]           0.199    0.736  0.271 0.786 -1.243  1.641
+src_subject_id[T.NDAR_INVH0474HRG]           0.319    0.736  0.433 0.665 -1.123  1.761
+src_subject_id[T.NDAR_INVJZRV5ANP]           0.040    0.736  0.054 0.957 -1.402  1.482
+src_subject_id[T.NDAR_INVM3902G6F]          -0.273                                    
+src_subject_id[T.NDAR_INVPEG2KF9H]          -0.431                                    
+src_subject_id[T.NDAR_INVR2HJCC0M]          -0.360                                    
+src_subject_id[T.NDAR_INVRL1GM16T]          -0.757    0.736 -1.029 0.303 -2.199  0.685
+src_subject_id[T.NDAR_INVT7YJ84MG]          -0.560                                    
+src_subject_id[T.NDAR_INVTK5NYC8X]          -0.949                                    
+src_subject_id[T.NDAR_INVUC80Z0WM]          -1.268                                    
+src_subject_id[T.NDAR_INVV44RDE6R]          -0.638    0.736 -0.867 0.386 -2.079  0.804
+src_subject_id[T.NDAR_INVV5GRGPFP]          -1.389                                    
+src_subject_id[T.NDAR_INVZ4NNCTMH]           1.074                                    
+src_subject_id[T.NDAR_INVZ8ZP1RDT]           2.150                                    
+src_subject_id[T.NDAR_INVZHCK39Y1]           1.913    0.736  2.600 0.009  0.471  3.355
+src_subject_id[T.NDAR_INVZLL8B2MA]          -0.040    0.736 -0.054 0.957 -1.482  1.402
+src_subject_id[T.NDAR_INVZXHZPZ48]           0.795                                    
+group                                       -0.256                                    
+eventname[T.4_year_follow_up_y_arm_1]:group -0.001    0.057 -0.009 0.992 -0.113  0.112
+eventname[T.baseline_year_1_arm_1]:group    -0.063    0.057 -1.095 0.273 -0.175  0.049
+Group Var                                    0.203    0.118                           
+======================================================================================
+
+
